@@ -55,6 +55,24 @@ def crearPdfImagenesRepeticion(path, output_path, dosLados, margenesAnverso, mar
                 else:
                     w = tamanioPersonalizado[0] * mm
                     h = tamanioPersonalizado[1] * mm
+        elif cartaOficio == 6:
+            if originalR:
+                w = 8.5 * inch
+                h = 14 * inch
+            else:
+                w = 14 * inch
+                h = 8.5 * inch
+        elif cartaOficio == 7:
+            if originalR:
+                w = 8.5 * inch
+                wF = w
+                h = 340.4 * mm
+                hF = 14 * inch
+            else:
+                w = 340.4 * mm
+                wF = 14 * inch
+                h = 8.5 * inch
+                hF = h
         else:
             if originalR:
                 w = 8.5 * inch
@@ -83,7 +101,7 @@ def crearPdfImagenesRepeticion(path, output_path, dosLados, margenesAnverso, mar
             anversoX2 = margenesAnverso[0] * mm
             reversoX1 = margenesReverso[0] * mm
             reversoX2 = margenesReverso[0] * mm
-            anversoY1 = margenesAnverso[3] * mm
+            anversoY1 = margenesAnverso[3] * mm + (15.3 * mm)
             anversoY2 = round(anversoY1 + (h / 2))
             reversoY1 = margenesReverso[3] * mm
             reversoY2 = round(reversoY1 + (h / 2))
@@ -92,7 +110,7 @@ def crearPdfImagenesRepeticion(path, output_path, dosLados, margenesAnverso, mar
             tamanioRX = w - ((margenesReverso[0] + margenesReverso[2]) * mm)
             tamanioRY = round((h / 2) - ((margenesReverso[1] + margenesReverso[3]) * mm))
         else:
-            anversoX1 = margenesAnverso[0] * mm
+            anversoX1 = margenesAnverso[0] * mm + (15.3 * mm)
             anversoX2 = round((w / 2) + anversoX1)
             reversoX1 = margenesReverso[0] * mm
             reversoX2 = round((w / 2) + reversoX1)
@@ -104,7 +122,10 @@ def crearPdfImagenesRepeticion(path, output_path, dosLados, margenesAnverso, mar
             tamanioAY = h - ((margenesAnverso[1] + margenesAnverso[3]) * mm)
             tamanioRX = round((w / 2) - ((margenesReverso[0] + margenesReverso[2]) * mm))
             tamanioRY = h - ((margenesReverso[1] + margenesReverso[3]) * mm)
-        pdf_canvas = canvas.Canvas(canvas_file, (w, h))
+        if cartaOficio == 7:
+            pdf_canvas = canvas.Canvas(canvas_file, (wF, hF))
+        else:
+            pdf_canvas = canvas.Canvas(canvas_file, (w, h))
         contador = 0
         print("Inicio", end="")
         for imagen in imagenes:
@@ -265,7 +286,9 @@ def preguntarMargenes():
     enR = False
     while True:
         try:
-            cartaOficio = int(input("\n¿Que tamanio de papel quiere usar?\n(1 = Carta, 2 = Oficio, 3 = 210mm x 340mm, 4 = Doble carta, 5 = Personalizado)\nRespuesta: "))
+            cartaOficio = int(input("\n¿Que tamanio de papel quiere usar?\n(1 = Carta\n2 = Oficio\n3 = 210mm x " +
+                                    "340mm\n4 = Doble carta\n5 = Personalizado\n6 = Legal\n7 = Legal fake (para los casos " +
+                                    "cuando necesitas usar papel oficio en formato Legal))\nRespuesta: "))
             break
         except ValueError:
             print("Debes de ingresar un numero 1, 2 o 3.")
