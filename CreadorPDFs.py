@@ -3,20 +3,21 @@ import PyPDF2
 from reportlab.pdfgen import canvas
 from reportlab.lib.units import inch, mm
 from tkinter import filedialog
+import numpy as np
 
 def crearPdfImagenesRepeticion(path, output_path, dosLados, margenesAnverso, margenesReverso, cartaOficio, tamanioPersonalizado):
-    imagenes = [f for f in os.listdir(path) if f.endswith(('.jpg', '.JPG', '.png', '.jpeg'))]
+    imagenes = [f for f in os.listdir(path) if f.endswith(('.jpg', '.JPG', '.png', '.jpeg', '.tif'))]
     print(f"\nSe encontraron {len(imagenes)} imagenes.")
     with open(output_path, 'wb') as canvas_file:
         imagen_path = os.path.join(path, imagenes[0])
         img = cv2.imread(imagen_path)
-        h, w, c = img.shape
+        hP, wP, c = img.shape
         originalR = False
         esVertical = False
-        if w > h:
+        if wP > hP:
             originalR = True
             esVertical = True
-        print(f"Tamanio de la primera imagen original = {w} x {h}")
+        print(f"Tamanio de la primera imagen original = {wP} x {hP}")
         w = 0
         h = 0
         if cartaOficio == 2:
@@ -98,10 +99,10 @@ def crearPdfImagenesRepeticion(path, output_path, dosLados, margenesAnverso, mar
         tamanioRY = 0
         if originalR:
             anversoX1 = margenesAnverso[0] * mm
-            anversoX2 = margenesAnverso[0] * mm
+            anversoX2 = anversoX1
             reversoX1 = margenesReverso[0] * mm
-            reversoX2 = margenesReverso[0] * mm
-            anversoY1 = margenesAnverso[3] * mm + (15.3 * mm)
+            reversoX2 = reversoX1
+            anversoY1 = margenesAnverso[3] * mm
             anversoY2 = round(anversoY1 + (h / 2))
             reversoY1 = margenesReverso[3] * mm
             reversoY2 = round(reversoY1 + (h / 2))
@@ -110,7 +111,7 @@ def crearPdfImagenesRepeticion(path, output_path, dosLados, margenesAnverso, mar
             tamanioRX = w - ((margenesReverso[0] + margenesReverso[2]) * mm)
             tamanioRY = round((h / 2) - ((margenesReverso[1] + margenesReverso[3]) * mm))
         else:
-            anversoX1 = margenesAnverso[0] * mm + (15.3 * mm)
+            anversoX1 = margenesAnverso[0] * mm
             anversoX2 = round((w / 2) + anversoX1)
             reversoX1 = margenesReverso[0] * mm
             reversoX2 = round((w / 2) + reversoX1)
@@ -118,6 +119,11 @@ def crearPdfImagenesRepeticion(path, output_path, dosLados, margenesAnverso, mar
             anversoY2 = anversoY1
             reversoY1 = margenesReverso[3] * mm
             reversoY2 = reversoY1
+            if cartaOficio == 7:
+                anversoX1 = anversoX1 + (.6 * inch)
+                anversoX2 = anversoX2 + (.6 * inch)
+                reversoX1 = reversoX1 + (.6 * inch)
+                reversoX2 = reversoX2 + (.6 * inch)
             tamanioAX = round((w / 2) - ((margenesAnverso[0] + margenesAnverso[2]) * mm))
             tamanioAY = h - ((margenesAnverso[1] + margenesAnverso[3]) * mm)
             tamanioRX = round((w / 2) - ((margenesReverso[0] + margenesReverso[2]) * mm))
@@ -150,7 +156,7 @@ def crearPdfImagenesRepeticion(path, output_path, dosLados, margenesAnverso, mar
     return esVertical
 
 def crearPdfImagenes(path, output_path, dosLados, margenesAnverso, margenesReverso, cartaOficio, tamanioPersonalizado):
-    imagenes = [f for f in os.listdir(path) if f.endswith(('.jpg', '.JPG', '.png', '.jpeg'))]
+    imagenes = [f for f in os.listdir(path) if f.endswith(('.jpg', '.JPG', '.png', '.jpeg', '.tif'))]
     print(f"\nSe encontraron {len(imagenes)} imagenes.")
     with open(output_path, 'wb') as canvas_file:
         imagen_path = os.path.join(path, imagenes[0])
@@ -240,29 +246,16 @@ def crearPdfImagenes(path, output_path, dosLados, margenesAnverso, margenesRever
         pdf_canvas.save()
     return esVertical
 
-def unir_pdfs(archivo1, archivo2, archivo_salida):
-    # Abrir los archivos PDF en modo binario
-    with open(archivo1, 'rb') as file1, open(archivo2, 'rb') as file2:
-        # Crear objetos PDF
-        pdf1 = PyPDF2.PdfReader(file1)
-        pdf2 = PyPDF2.PdfReader(file2)
-
-        # Crear un objeto PDFWriter para el archivo de salida
-        pdf_writer = PyPDF2.PdfWriter()
-
-        # Agregar páginas del primer archivo
-        for page_num in range(len(pdf1.pages)):
-            page = pdf1.pages[page_num]
-            pdf_writer.add_page(page)
-
-        # Agregar páginas del segundo archivo
-        for page_num in range(len(pdf2.pages)):
-            page = pdf2.pages[page_num]
-            pdf_writer.add_page(page)
-
-        # Escribir el resultado en el archivo de salida
-        with open(archivo_salida, 'wb') as output_file:
-            pdf_writer.write(output_file)
+def unir_pdfs(nombres, archivo_salida):
+    pdf_writer = PyPDF2.PdfWriter()
+    for x in range(len(nombres)):
+        with open(nombres[x], 'rb') as file:
+            pdf = PyPDF2.PdfReader(file)
+            for page_num in range(len(pdf.pages)):
+                page = pdf.pages[page_num]
+                pdf_writer.add_page(page)
+    with open(archivo_salida, 'wb') as output_file:
+        pdf_writer.write(output_file)
 
 def girarPaginas(archivo, grados):
     with open(archivo, 'rb') as file:
@@ -400,13 +393,96 @@ def invertirPDF(archivo, archivo_salida):
         with open(archivo_salida, 'wb') as output_file:
             pdf_writer.write(output_file)
 
+def borrarMargenes(path, path_salida):
+    imagenes = [f for f in os.listdir(path) if f.endswith(('.jpg', '.JPG', '.png', '.jpeg', '.tif'))]
+    tamanio, anversoBorrado, reversoBorrado = preguntarMargenesBorrado()
+    imagen_path = os.path.join(path, imagenes[0])
+    img = cv2.imread(imagen_path)
+    h, w, c = img.shape
+    pixelesPorMilimetroX = w / tamanio[0]
+    pixelesPorMilimetroY = h / tamanio[1]
+    imagenBlanca = np.ones_like(img) * 255
+    for imagen in imagenes:
+        imagen_path = os.path.join(path, imagen)
+        img = cv2.imread(imagen_path)
+        nuevaImagen = img
+        nuevaImagen[:, int():] = img[:, int(.5 * img.shape[1]):]
+
+def preguntarMargenesBorrado():
+    tamanio = []
+    anversoBorrado = []
+    reversoBorrado = []
+    while True:
+        try:
+            tamanio[0] = int(input("Ingrese el tamanio del ancho de la imagen en mm: "))
+            break
+        except ValueError:
+            print("El ancho de la imagen debe ser un número entero.")
+    while True:
+        try:
+            tamanio[1] = int(input("Ingrese el tamanio del alto de la imagen en mm: "))
+            break
+        except ValueError:
+            print("El alto de la imagen debe ser un número entero.")
+    dosLados = input("Dos lados? (1 = Si, 2 = No): ")
+    while True:
+        try:
+            anversoBorrado[0] = int(input("Ingrese el numero de mm que quiere borrar del lado anverso izquierdo: "))
+            break
+        except ValueError:
+            print("Debe de ingresar un numero entero.")
+    while True:
+        try:
+            anversoBorrado[1] = int(input("Ingrese el numero de mm que quiere borrar del lado anverso superior: "))
+            break
+        except ValueError:
+            print("Debe de ingresar un numero entero.")
+    while True:
+        try:
+            anversoBorrado[2] = int(input("Ingrese el numero de mm que quiere borrar del lado anverso derecho: "))
+            break
+        except ValueError:
+            print("Debe de ingresar un numero entero.")
+    while True:
+        try:
+            anversoBorrado[3] = int(input("Ingrese el numero de mm que quiere borrar del lado anverso inferior: "))
+            break
+        except ValueError:
+            print("Debe de ingresar un numero entero.")
+    if dosLados != "2":
+        while True:
+            try:
+                reversoBorrado[0] = int(input("Ingrese el numero de mm que quiere borrar del lado reverso izquierdo: "))
+                break
+            except ValueError:
+                print("Debe de ingresar un numero entero.")
+        while True:
+            try:
+                reversoBorrado[1] = int(input("Ingrese el numero de mm que quiere borrar del lado reverso superior: "))
+                break
+            except ValueError:
+                print("Debe de ingresar un numero entero.")
+        while True:
+            try:
+                reversoBorrado[2] = int(input("Ingrese el numero de mm que quiere borrar del lado reverso derecho: "))
+                break
+            except ValueError:
+                print("Debe de ingresar un numero entero.")
+        while True:
+            try:
+                reversoBorrado[3] = int(input("Ingrese el numero de mm que quiere borrar del lado reverso inferior: "))
+                break
+            except ValueError:
+                print("Debe de ingresar un numero entero.")
+    return tamanio, anversoBorrado, reversoBorrado
+        
 
 if __name__ == "__main__":
     os.system("cls")
     elegir = ""
-    while elegir != "6":
+    while elegir != "7":
         os.system("cls")
-        print("Creador de PDFs\n1 = Repeticion\n2 = Crear PDF\n3 = Unir dos PDFs\n4 = Invertir numeracion PDF\n5 = Rotar PDF\n6 = Salir\n")
+        print("Creador de PDFs\n1 = Repeticion\n2 = Crear PDF\n3 = Unir dos PDFs\n4 = Invertir numeracion PDF\n5 = Rotar PDF\n6 = Borrar margenes\n7 = Salir\n")
         print("Nota: para detener el programa en cualquier momento, presione \"Ctrl + C\".\n")
         elegir = input("Ingrese el numero de la opcion que desea ejecutar: ")
         os.system("cls")
@@ -429,6 +505,9 @@ if __name__ == "__main__":
                     girarPaginas(pdfSalida_path, 90)
                 if not enR and not esVertical:
                     girarPaginas(pdfSalida_path, 270)
+                rotar = input("\n\nQuiere girar su archivo 180 grados? (1 = Si, 2 = No): ")
+                if rotar == "1":
+                    girarPaginas(pdfSalida_path, 180)
                 print(f"\n\nEl pdf se ha creado en {pdfSalida_path}.")
             except Exception as e:
                 print("Error :(\n", e)
@@ -457,14 +536,19 @@ if __name__ == "__main__":
                 print("Error :(\n", e)
             salida = input("Presione enter para salir.")
         elif elegir == "3":
-            print("Este programa une dos archivos PDF en uno solo.\n")
+            print("Este programa une dos o más archivos PDF en uno solo.\n")
+            nombres = []
+            opcion = ""
             try:
-                input("Presione enter para elegir el primer archivo.")
-                archivo1 = filedialog.askopenfilename()
-                input("Presione enter para elegir el segundo archivo.")
-                archivo2 = filedialog.askopenfilename()
+                input("Presione enter para seleccionar el primer archivo archivos.")
+                nombres.append(filedialog.askopenfilename())
+                input("Presione enter para seleccionar el segundo archivo archivos.")
+                while opcion != "0":
+                    nombres.append(filedialog.askopenfilename())
+                    opcion = input("Ingrese 1 para elegir el siguiente archivo o 0 para terminar con la seleccion: ")
+                input("Presione enter para seleccionar el nombre de u archivo.")
                 archivo_salida = filedialog.asksaveasfilename(defaultextension=".pdf")
-                unir_pdfs(archivo1, archivo2, archivo_salida)
+                unir_pdfs(nombres, archivo_salida)
                 print(f'Archivos unidos con éxito en {archivo_salida}')
             except Exception as e:
                 print("Error :(\n", e)
@@ -500,5 +584,18 @@ if __name__ == "__main__":
             except Exception as e:
                 print("Error :(\n", e)
             salida = input("Presione enter para salir.")
-        else:
-            exit()
+        elif elegir == "6":
+            print("Este programa elimina margenes de imagenes\n")
+            decision = input("1 = Elegir la carpeta que contiene las imagenes e iniciar\n0 = Salir\nIngrese: ")
+            if decision != "1":
+                salida = input("Presione enter para salir.")
+                exit()
+            try:
+                path = filedialog.askdirectory()
+                path_salida = filedialog.askdirectory()
+                borrarMargenes(path, path_salida)
+            except Exception as e:
+                print("Error :(\n", e)
+                salida = input("Presione enter para salir.")
+            else:
+                exit()
