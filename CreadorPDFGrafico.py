@@ -7,6 +7,7 @@ import PyPDF2
 from reportlab.pdfgen import canvas
 from reportlab.lib.units import inch, mm
 import logging
+import numpy as np
 
 # Configuración del logging
 logging.basicConfig(filename='app.log', level=logging.DEBUG,
@@ -357,6 +358,43 @@ class GeneradorPDF:
                 pdf_writer.write(output_file)
         logging.info(f"El PDF se ha invertido en {self.pathSalida}.")
 
+    def borrarMargenes(self):
+        logging.info("Iniciando el proceso de borrado de margenes...")
+        logging.info(f"Se borraran los margenes de la ruta {self.pathDirectorio}.")
+        imagenes = [f for f in os.listdir(self.pathDirectorio) if f.endswith(('.jpg', '.JPG', '.png', '.jpeg', '.tif'))]
+        logging.info(f"Se encontraron {len(imagenes)} imagenes.")
+        directorioBase = self.pathDirectorio + "Borrado"
+        directorioIntento = directorioBase
+        intento = 1
+        while os.path.exists(directorioIntento):
+            directorioIntento = directorioBase + str(intento)
+            intento += 1
+        os.makedirs(directorioIntento)
+        logging.info(f"Carpeta creada exitosamente en {directorioIntento}.")
+        xAnverso1, yAnverso1, xAnverso2, yAnverso2 = self.margenesAnverso[0], self.margenesAnverso[1], self.margenesAnverso[2], self.margenesAnverso[3]
+        if self.dosLados:
+            xReverso1, yReverso1, xReverso2, yReverso2 = self.margenesReverso[0], self.margenesReverso[1], self.margenesReverso[2], self.margenesReverso[3]
+        contador = 1
+        for imagen in imagenes:
+            logging.info(f"Recortando imagen {imagen}")
+            imagenPath = os.path.join(self.pathDirectorio, imagen)
+            img = cv2.imread(imagenPath)
+            h, w, c = img.shape
+            imagenBlanca = np.ones_like(img) * 255
+            if self.dosLados:
+                if contador % 2 == 0:
+                    recorte = img[yReverso1:h-yReverso2, xReverso1:w-xReverso2]
+                    imagenBlanca[yReverso1:h-yReverso2, xReverso1:w-xReverso2] = recorte
+                else:
+                    recorte = img[yAnverso1:h-yAnverso2, xAnverso1:w-xAnverso2]
+                    imagenBlanca[yAnverso1:h-yAnverso2, xAnverso1:w-xAnverso2] = recorte
+            else:
+                recorte = img[yAnverso1:h-yAnverso2, xAnverso1:w-xAnverso2]
+                imagenBlanca[yAnverso1:h-yAnverso2, xAnverso1:w-xAnverso2] = recorte
+            cv2.imwrite(os.path.join(directorioIntento, imagen), imagenBlanca)
+            contador += 1
+        logging.info(f"Las imagenes se han guardado en {directorioIntento}.")
+
 
 class Ventana:
     def __init__(self):
@@ -567,43 +605,43 @@ class Ventana:
         self.checkButtonBorrarDosLados.place(x = 10, y = 50)
 
         # Borrar margenes frente
-        self.etiquetaBorrarMargenFrenteIzquierda = Label(self.pestania5, text = "mm", font = ("Arial", 12))
+        self.etiquetaBorrarMargenFrenteIzquierda = Label(self.pestania5, text = "px", font = ("Arial", 12))
         self.etiquetaBorrarMargenFrenteIzquierda.place(x = 70, y = 205)
         self.spinboxBorrarMargenFrenteIzquierda = Spinbox(self.pestania5, from_=0, to=300, increment=1, width = 4, font = ("Arial", 12))
         self.spinboxBorrarMargenFrenteIzquierda.place(x = 10, y = 205)
 
-        self.etiquetaBorrarMargenFrenteSuperior = Label(self.pestania5, text = "mm", font = ("Arial", 12))
+        self.etiquetaBorrarMargenFrenteSuperior = Label(self.pestania5, text = "px", font = ("Arial", 12))
         self.etiquetaBorrarMargenFrenteSuperior.place(x = 200, y = 110)
         self.spinboxBorrarMargenFrenteSuperior = Spinbox(self.pestania5, from_=0, to=300, increment=1, width = 4, font = ("Arial", 12))
         self.spinboxBorrarMargenFrenteSuperior.place(x = 140, y = 110)
 
-        self.etiquetaBorrarMargenFrenteDerecha = Label(self.pestania5, text = "mm", font = ("Arial", 12))
+        self.etiquetaBorrarMargenFrenteDerecha = Label(self.pestania5, text = "px", font = ("Arial", 12))
         self.etiquetaBorrarMargenFrenteDerecha.place(x = 327, y = 205)
         self.spinboxBorrarMargenFrenteDerecha = Spinbox(self.pestania5, from_=0, to=300, increment=1, width = 4, font = ("Arial", 12))
         self.spinboxBorrarMargenFrenteDerecha.place(x = 267, y = 205)
 
-        self.etiquetaBorrarMargenFrenteInferior = Label(self.pestania5, text = "mm", font = ("Arial", 12))
+        self.etiquetaBorrarMargenFrenteInferior = Label(self.pestania5, text = "px", font = ("Arial", 12))
         self.etiquetaBorrarMargenFrenteInferior.place(x = 200, y = 303)
         self.spinboxBorrarMargenFrenteInferior = Spinbox(self.pestania5, from_=0, to=300, increment=1, width = 4, font = ("Arial", 12))
         self.spinboxBorrarMargenFrenteInferior.place(x = 140, y = 303)
 
         # Borrar margenes vuelta
-        self.etiquetaBorrarMargenVueltaIzquierda = Label(self.pestania5, text = "mm", font = ("Arial", 12), state = DISABLED)
+        self.etiquetaBorrarMargenVueltaIzquierda = Label(self.pestania5, text = "px", font = ("Arial", 12), state = DISABLED)
         self.etiquetaBorrarMargenVueltaIzquierda.place(x = 465, y = 205)
         self.spinboxBorrarMargenVueltaIzquierda = Spinbox(self.pestania5, from_=0, to=300, increment=1, width = 4, font = ("Arial", 12), state=DISABLED)
         self.spinboxBorrarMargenVueltaIzquierda.place(x = 405, y = 205)
 
-        self.etiquetaBorrarMargenVueltaSuperior = Label(self.pestania5, text = "mm", font = ("Arial", 12), state = DISABLED)
+        self.etiquetaBorrarMargenVueltaSuperior = Label(self.pestania5, text = "px", font = ("Arial", 12), state = DISABLED)
         self.etiquetaBorrarMargenVueltaSuperior.place(x = 595, y = 110)
         self.spinboxBorrarMargenVueltaSuperior = Spinbox(self.pestania5, from_=0, to=300, increment=1, width = 4, font = ("Arial", 12), state=DISABLED)
         self.spinboxBorrarMargenVueltaSuperior.place(x = 535, y = 110)
 
-        self.etiquetaBorrarMargenVueltaDerecha = Label(self.pestania5, text = "mm", font = ("Arial", 12), state = DISABLED)
+        self.etiquetaBorrarMargenVueltaDerecha = Label(self.pestania5, text = "px", font = ("Arial", 12), state = DISABLED)
         self.etiquetaBorrarMargenVueltaDerecha.place(x = 722, y = 205)
         self.spinboxBorrarMargenVueltaDerecha = Spinbox(self.pestania5, from_=0, to=300, increment=1, width = 4, font = ("Arial", 12), state=DISABLED)
         self.spinboxBorrarMargenVueltaDerecha.place(x = 662, y = 205)
 
-        self.etiquetaBorrarMargenVueltaInferior = Label(self.pestania5, text = "mm", font = ("Arial", 12), state = DISABLED)
+        self.etiquetaBorrarMargenVueltaInferior = Label(self.pestania5, text = "px", font = ("Arial", 12), state = DISABLED)
         self.etiquetaBorrarMargenVueltaInferior.place(x = 595, y = 303)
         self.spinboxBorrarMargenVueltaInferior = Spinbox(self.pestania5, from_=0, to=300, increment=1, width = 4, font = ("Arial", 12), state=DISABLED)
         self.spinboxBorrarMargenVueltaInferior.place(x = 535, y = 303)
@@ -804,7 +842,12 @@ class Ventana:
                 self.creadorPDF.invertirPDF()
                 tk.messagebox.showinfo("Informacion", f"PDF creado en {self.creadorPDF.pathSalida}")
             elif proceso == 5: # Borrar margenes
-                tk.messagebox.showinfo("Informacion", "Proceso no implementado")
+                self.creadorPDF.pathDirectorio = self.entryPathBorrar.get()
+                self.creadorPDF.margenesAnverso = [int(self.spinboxBorrarMargenFrenteIzquierda.get()), int(self.spinboxBorrarMargenFrenteSuperior.get()), int(self.spinboxBorrarMargenFrenteDerecha.get()), int(self.spinboxBorrarMargenFrenteInferior.get())]
+                self.creadorPDF.margenesReverso = [int(self.spinboxBorrarMargenVueltaIzquierda.get()), int(self.spinboxBorrarMargenVueltaSuperior.get()), int(self.spinboxBorrarMargenVueltaDerecha.get()), int(self.spinboxBorrarMargenVueltaInferior.get())]
+                self.creadorPDF.dosLados = self.checkVarBorrarDosLados.get()
+                self.creadorPDF.borrarMargenes()
+                tk.messagebox.showinfo("Informacion", "Margenes borrados correctamente")
             elif proceso == 6: # Variar densidad
                 tk.messagebox.showinfo("Informacion", "Proceso no implementado")
         except Exception as e:
