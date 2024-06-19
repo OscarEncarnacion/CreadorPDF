@@ -4,6 +4,7 @@ from tkinter import ttk
 from tkinter import filedialog
 import GeneradorPDF as gp
 import logging
+import os
 
 
 class Ventana:
@@ -12,6 +13,7 @@ class Ventana:
         self.ventana.title("Creador de PDFs")
         self.ventana.geometry("800x600")
         self.ventana.configure(bg = "white")
+        self.ventana.iconbitmap("icono.ico")
         self.ventana.resizable(0,0)
 
         self.creadorPDF = gp.GeneradorPDF()
@@ -178,10 +180,20 @@ class Ventana:
         self.botonPathGirar = Button(self.pestania3, text = "...", font = ("Arial", 12), command=lambda: self.seleccionarPDF(opcion=2))
         self.botonPathGirar.place(x = 623, y = 10, height=22)
 
-        self.etiquetaGirarGrados = Label(self.pestania3, text = "Seleccionar los grados que quiere girar su documento a la derecha.", font = ("Arial", 12))
+        self.etiquetaGirarGrados = Label(self.pestania3, text = "Seleccionar los grados que quiere girar su documento.", font = ("Arial", 12))
         self.etiquetaGirarGrados.place(x = 10, y = 50)
-        self.spinboxGirarGrados = Spinbox(self.pestania3, from_=90, to=270, increment=90, width = 4, font = ("Arial", 12))
-        self.spinboxGirarGrados.place(x = 490, y = 50)
+        self.spinboxGirarGrados = Spinbox(self.pestania3, from_=0, to=270, increment=90, width = 4, font = ("Arial", 12))
+        self.spinboxGirarGrados.place(x = 400, y = 50)
+
+        self.checkVarGirarDiferente = tk.BooleanVar()
+        self.checkVarGirarDiferente.trace("w", self.actualizarGirarDiferente)
+        self.checkButtonGirarDiferente = Checkbutton(self.pestania3, text = "Girar diferentes grados para las paginas nones y pares.", variable = self.checkVarGirarDiferente, font = ("Arial", 12))
+        self.checkButtonGirarDiferente.place(x = 10, y = 90)
+
+        self.etiquetaGirarGradosPares = Label(self.pestania3, text = "Seleccionar los grados que quiere girar las paginas pares de su documento.", font = ("Arial", 12), state=DISABLED)
+        self.etiquetaGirarGradosPares.place(x = 10, y = 130)
+        self.spinboxGirarGradosPares = Spinbox(self.pestania3, from_=0, to=270, increment=90, width = 4, font = ("Arial", 12), state=DISABLED)
+        self.spinboxGirarGradosPares.place(x = 550, y = 130)
 
         self.botonGirarPDF = Button(self.pestania3, text = "Girar PDF", font = ("Arial", 12), background="green", foreground="white", command=lambda: self.ejecutar(proceso=3))
         self.botonGirarPDF.place(x = 670, y = 500)
@@ -375,6 +387,14 @@ class Ventana:
             self.etiquetaBorrarMargenVueltaInferior.config(state=DISABLED)
             self.spinboxBorrarMargenVueltaInferior.config(state=DISABLED)
 
+    def actualizarGirarDiferente(self, *args):
+        if self.checkVarGirarDiferente.get():
+            self.etiquetaGirarGradosPares.config(state=NORMAL)
+            self.spinboxGirarGradosPares.config(state=NORMAL)
+        else:
+            self.etiquetaGirarGradosPares.config(state=DISABLED)
+            self.spinboxGirarGradosPares.config(state=DISABLED)
+
     def agregarNombrePDF(self):
         if len(self.rutasPDFs) > 20:
             tk.messagebox.showerror("Error", "No se pueden agregar mas de 20 PDFs")
@@ -429,6 +449,7 @@ class Ventana:
     
     def ejecutar(self, proceso):
         try:
+            self.creadorPDF.limpiarAtributos()
             if proceso == 1: # Crear PDF desde imagenes
                 self.creadorPDF.pathDirectorio = self.entryPath.get()
                 self.creadorPDF.pathSalida = filedialog.asksaveasfilename(defaultextension=".pdf")
@@ -436,7 +457,7 @@ class Ventana:
                 if self.comboboxTipoPapel.current() == 6:
                     self.creadorPDF.tipoPersonalizado = [int(self.spinboxTamanioX.get()), int(self.spinboxTamanioY.get())]
                 self.creadorPDF.margenesAnverso = [int(self.spinboxMargenFrenteIzquierda.get()), int(self.spinboxMargenFrenteSuperior.get()), int(self.spinboxMargenFrenteDerecha.get()), int(self.spinboxMargenFrenteInferior.get())]
-                if self.checkVarRepeticion.get():
+                if self.checkVarDosLados.get():
                     self.creadorPDF.margenesReverso = [int(self.spinboxMargenVueltaIzquierda.get()), int(self.spinboxMargenVueltaSuperior.get()), int(self.spinboxMargenVueltaDerecha.get()), int(self.spinboxMargenVueltaInferior.get())]
                 self.creadorPDF.dosLados = self.checkVarDosLados.get()
                 self.creadorPDF.archivoSalidaEnR = self.checkVarR.get()
@@ -445,22 +466,28 @@ class Ventana:
                 else:
                     self.creadorPDF.crearPdfImagenes()
                 tk.messagebox.showinfo("Informacion", f"PDF creado en {self.creadorPDF.pathSalida}")
+                os.startfile(self.creadorPDF.pathSalida)
             elif proceso == 2: # Unir PDFs
                 self.creadorPDF.pathsPDFs = self.rutasPDFs
                 self.creadorPDF.pathSalida = filedialog.asksaveasfilename(defaultextension=".pdf")
                 self.creadorPDF.unirPDFs()
                 tk.messagebox.showinfo("Informacion", f"PDF creado en {self.creadorPDF.pathSalida}")
+                os.startfile(self.creadorPDF.pathSalida)
             elif proceso == 3: # Girar PDF
                 self.creadorPDF.pathPDF = self.entryPathGirar.get()
                 self.creadorPDF.grados = int(self.spinboxGirarGrados.get())
+                self.creadorPDF.gradosPares = int(self.spinboxGirarGradosPares.get())
+                self.creadorPDF.girarDiferente = self.checkVarGirarDiferente.get()
                 self.creadorPDF.pathSalida = filedialog.asksaveasfilename(defaultextension=".pdf")
                 self.creadorPDF.girarPaginas()
                 tk.messagebox.showinfo("Informacion", f"PDF creado en {self.creadorPDF.pathSalida}")
+                os.startfile(self.creadorPDF.pathSalida)
             elif proceso == 4: # Invertir PDF
                 self.creadorPDF.pathPDF = self.entryPathInvertir.get()
                 self.creadorPDF.pathSalida = filedialog.asksaveasfilename(defaultextension=".pdf")
                 self.creadorPDF.invertirPDF()
                 tk.messagebox.showinfo("Informacion", f"PDF creado en {self.creadorPDF.pathSalida}")
+                os.startfile(self.creadorPDF.pathSalida)
             elif proceso == 5: # Borrar margenes
                 self.creadorPDF.pathDirectorio = self.entryPathBorrar.get()
                 self.creadorPDF.margenesAnverso = [int(self.spinboxBorrarMargenFrenteIzquierda.get()), int(self.spinboxBorrarMargenFrenteSuperior.get()), int(self.spinboxBorrarMargenFrenteDerecha.get()), int(self.spinboxBorrarMargenFrenteInferior.get())]
@@ -468,12 +495,14 @@ class Ventana:
                 self.creadorPDF.dosLados = self.checkVarBorrarDosLados.get()
                 self.creadorPDF.borrarMargenes()
                 tk.messagebox.showinfo("Informacion", "Margenes borrados correctamente")
+                os.startfile(self.creadorPDF.getDirectorioSalida())
             elif proceso == 6: # Variar densidad
                 self.creadorPDF.pathDirectorio = self.entryPathDensidad.get()
                 self.creadorPDF.densidad = -int(self.spinboxDensidad.get())
                 self.creadorPDF.varianteBlanco = int(self.spinboxVariante.get())
                 self.creadorPDF.variarDensidad()
                 tk.messagebox.showinfo("Informacion", "Densidad alterada correctamente")
+                os.startfile(self.creadorPDF.getDirectorioSalida())
         except Exception as e:
             logging.error(f"Error: {e}")
             tk.messagebox.showerror("Error en la ejecucion", f"Revice el archivo log para encontrar el posible motivo.\nError: {e}")

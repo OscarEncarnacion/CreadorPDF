@@ -9,6 +9,7 @@ import numpy as np
 class GeneradorPDF:
     def __init__(self):
         self.pathDirectorio = ""
+        self.__pathDirectorioSalida = ""
         self.pathPDF = ""
         self.pathsPDFs = []
         self.pathSalida = ""
@@ -19,6 +20,8 @@ class GeneradorPDF:
         self.dosLados = False
         self.archivoSalidaEnR = False
         self.grados = 0
+        self.gradosPares = 0
+        self.girarDiferente = False
         self.densidad = 0
         self.varianteBlanco = 0
 
@@ -128,7 +131,7 @@ class GeneradorPDF:
             logging.info("Inicio")
             for imagen in imagenes:
                 imagen_path = os.path.join(self.pathDirectorio, imagen)
-                if self.dosLados == True:
+                if self.dosLados:
                     if contador % 2 == 0:
                         # Anverso
                         pdf_canvas.drawImage(imagen_path, anversoX, anversoY, width=tamanioAX, height=tamanioAY)
@@ -334,15 +337,31 @@ class GeneradorPDF:
     def girarPaginas(self):
         logging.info("Iniciando el proceso de rotacion de paginas...")
         logging.info(f"Se giraran las paginas del PDF {self.pathPDF} {self.grados} grados.")
-        with open(self.pathPDF, 'rb') as file:
-            pdf = PyPDF2.PdfReader(file)
-            pdf_writer = PyPDF2.PdfWriter()
-            for page_num in range(len(pdf.pages)):
-                logging.info(f"Rotando pagina {page_num + 1}")
-                page = pdf.pages[page_num].rotate(self.grados)
-                pdf_writer.add_page(page)
-            with open(self.pathSalida, 'wb') as output_file:
-                pdf_writer.write(output_file)
+        if self.girarDiferente:
+            with open(self.pathPDF, 'rb') as file:
+                pdf = PyPDF2.PdfReader(file)
+                pdf_writer = PyPDF2.PdfWriter()
+                contador = 1
+                for page_num in range(len(pdf.pages)):
+                    logging.info(f"Rotando pagina {page_num + 1}")
+                    if contador % 2 == 1:
+                        page = pdf.pages[page_num].rotate(self.grados)
+                    else:
+                        page = pdf.pages[page_num].rotate(self.gradosPares)
+                    contador += 1
+                    pdf_writer.add_page(page)
+                with open(self.pathSalida, 'wb') as output_file:
+                    pdf_writer.write(output_file)
+        else:
+            with open(self.pathPDF, 'rb') as file:
+                pdf = PyPDF2.PdfReader(file)
+                pdf_writer = PyPDF2.PdfWriter()
+                for page_num in range(len(pdf.pages)):
+                    logging.info(f"Rotando pagina {page_num + 1}")
+                    page = pdf.pages[page_num].rotate(self.grados)
+                    pdf_writer.add_page(page)
+                with open(self.pathSalida, 'wb') as output_file:
+                    pdf_writer.write(output_file)
         logging.info(f"El PDF se ha girado en {self.pathSalida}.")
 
     def invertirPDF(self):
@@ -373,6 +392,7 @@ class GeneradorPDF:
             directorioIntento = directorioBase + str(intento)
             intento += 1
         os.makedirs(directorioIntento)
+        self.__pathDirectorioSalida = directorioIntento
         logging.info(f"Carpeta creada exitosamente en {directorioIntento}.")
         xAnverso1, yAnverso1, xAnverso2, yAnverso2 = self.margenesAnverso[0], self.margenesAnverso[1], self.margenesAnverso[2], self.margenesAnverso[3]
         if self.dosLados:
@@ -410,6 +430,7 @@ class GeneradorPDF:
             directorioIntento = directorioBase + str(intento)
             intento += 1
         os.makedirs(directorioIntento)
+        self.__pathDirectorioSalida = directorioIntento
         logging.info(f"Carpeta creada exitosamente en {directorioIntento}.")
         for imagen in imagenes:
             logging.info(f"Cambiando intensidad de imagen {imagen}")
@@ -429,3 +450,24 @@ class GeneradorPDF:
                                 pixel[k] = pixel[k] + self.densidad
             cv2.imwrite(os.path.join(directorioIntento, imagen), img)
         logging.info(f"Las imagenes se han guardado en {directorioIntento}.")
+    
+    def getDirectorioSalida(self):
+        return self.__pathDirectorioSalida
+    
+    def limpiarAtributos(self):
+        self.pathDirectorio = ""
+        self.__pathDirectorioSalida = ""
+        self.pathPDF = ""
+        self.pathsPDFs = []
+        self.pathSalida = ""
+        self.tipoPapel = 0
+        self.tipoPersonalizado = [0, 0]
+        self.margenesAnverso = [0, 0, 0, 0]
+        self.margenesReverso = [0, 0, 0, 0]
+        self.dosLados = False
+        self.archivoSalidaEnR = False
+        self.grados = 0
+        self.gradosPares = 0
+        self.girarDiferente = False
+        self.densidad = 0
+        self.varianteBlanco = 0
