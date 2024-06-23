@@ -472,6 +472,8 @@ class Ventana:
                 self.creadorPDF.pathSalida = filedialog.asksaveasfilename(defaultextension=".pdf")
                 self.creadorPDF.unirPDFs()
                 tk.messagebox.showinfo("Informacion", f"PDF creado en {self.creadorPDF.pathSalida}")
+                self.rutasPDFs.clear()
+                self.etiquetaListaPDFs.config(text = "")
                 os.startfile(self.creadorPDF.pathSalida)
             elif proceso == 3: # Girar PDF
                 self.creadorPDF.pathPDF = self.entryPathGirar.get()
