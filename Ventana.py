@@ -13,7 +13,7 @@ class Ventana:
         self.ventana.title("Creador de PDFs")
         self.ventana.geometry("800x600")
         self.ventana.configure(bg = "white")
-        self.ventana.iconbitmap("icono.ico")
+        # self.ventana.iconbitmap("icono.ico")
         self.ventana.resizable(0,0)
 
         self.creadorPDF = gp.GeneradorPDF()
@@ -91,43 +91,51 @@ class Ventana:
         # Margenes frente
         self.etiquetaMargenFrenteIzquierda = Label(self.pestania1, text = "mm", font = ("Arial", 12))
         self.etiquetaMargenFrenteIzquierda.place(x = 70, y = 245)
-        self.spinboxMargenFrenteIzquierda = Spinbox(self.pestania1, from_=0, to=300, increment=1, width = 4, font = ("Arial", 12))
+        self.spinboxMargenFrenteIzquierda = Spinbox(self.pestania1, from_=-300, to=300, increment=1, width = 4, font = ("Arial", 12))
+        self.spinboxMargenFrenteIzquierda.insert(0, 0)
         self.spinboxMargenFrenteIzquierda.place(x = 10, y = 245)
 
         self.etiquetaMargenFrenteSuperior = Label(self.pestania1, text = "mm", font = ("Arial", 12))
         self.etiquetaMargenFrenteSuperior.place(x = 200, y = 150)
-        self.spinboxMargenFrenteSuperior = Spinbox(self.pestania1, from_=0, to=300, increment=1, width = 4, font = ("Arial", 12))
+        self.spinboxMargenFrenteSuperior = Spinbox(self.pestania1, from_=-300, to=300, increment=1, width = 4, font = ("Arial", 12))
+        self.spinboxMargenFrenteSuperior.insert(0, 0)
         self.spinboxMargenFrenteSuperior.place(x = 140, y = 150)
 
         self.etiquetaMargenFrenteDerecha = Label(self.pestania1, text = "mm", font = ("Arial", 12))
         self.etiquetaMargenFrenteDerecha.place(x = 327, y = 245)
-        self.spinboxMargenFrenteDerecha = Spinbox(self.pestania1, from_=0, to=300, increment=1, width = 4, font = ("Arial", 12))
+        self.spinboxMargenFrenteDerecha = Spinbox(self.pestania1, from_=-300, to=300, increment=1, width = 4, font = ("Arial", 12))
+        self.spinboxMargenFrenteDerecha.insert(0, 0)
         self.spinboxMargenFrenteDerecha.place(x = 267, y = 245)
 
         self.etiquetaMargenFrenteInferior = Label(self.pestania1, text = "mm", font = ("Arial", 12))
         self.etiquetaMargenFrenteInferior.place(x = 200, y = 343)
-        self.spinboxMargenFrenteInferior = Spinbox(self.pestania1, from_=0, to=300, increment=1, width = 4, font = ("Arial", 12))
+        self.spinboxMargenFrenteInferior = Spinbox(self.pestania1, from_=-300, to=300, increment=1, width = 4, font = ("Arial", 12))
+        self.spinboxMargenFrenteInferior.insert(0, 0)
         self.spinboxMargenFrenteInferior.place(x = 140, y = 343)
 
         # Margenes vuelta
         self.etiquetaMargenVueltaIzquierda = Label(self.pestania1, text = "mm", font = ("Arial", 12), state = DISABLED)
         self.etiquetaMargenVueltaIzquierda.place(x = 465, y = 245)
-        self.spinboxMargenVueltaIzquierda = Spinbox(self.pestania1, from_=0, to=300, increment=1, width = 4, font = ("Arial", 12), state=DISABLED)
+        self.spinboxMargenVueltaIzquierda = Spinbox(self.pestania1, from_=-300, to=300, increment=1, width = 4, font = ("Arial", 12), state=DISABLED)
+        self.spinboxMargenVueltaIzquierda.insert(0, 0)
         self.spinboxMargenVueltaIzquierda.place(x = 405, y = 245)
 
         self.etiquetaMargenVueltaSuperior = Label(self.pestania1, text = "mm", font = ("Arial", 12), state = DISABLED)
         self.etiquetaMargenVueltaSuperior.place(x = 595, y = 150)
-        self.spinboxMargenVueltaSuperior = Spinbox(self.pestania1, from_=0, to=300, increment=1, width = 4, font = ("Arial", 12), state=DISABLED)
+        self.spinboxMargenVueltaSuperior = Spinbox(self.pestania1, from_=-300, to=300, increment=1, width = 4, font = ("Arial", 12), state=DISABLED)
+        self.spinboxMargenVueltaSuperior.insert(0, 0)
         self.spinboxMargenVueltaSuperior.place(x = 535, y = 150)
 
         self.etiquetaMargenVueltaDerecha = Label(self.pestania1, text = "mm", font = ("Arial", 12), state = DISABLED)
         self.etiquetaMargenVueltaDerecha.place(x = 722, y = 245)
-        self.spinboxMargenVueltaDerecha = Spinbox(self.pestania1, from_=0, to=300, increment=1, width = 4, font = ("Arial", 12), state=DISABLED)
+        self.spinboxMargenVueltaDerecha = Spinbox(self.pestania1, from_=-300, to=300, increment=1, width = 4, font = ("Arial", 12), state=DISABLED)
+        self.spinboxMargenVueltaDerecha.insert(0, 0)
         self.spinboxMargenVueltaDerecha.place(x = 662, y = 245)
 
         self.etiquetaMargenVueltaInferior = Label(self.pestania1, text = "mm", font = ("Arial", 12), state = DISABLED)
         self.etiquetaMargenVueltaInferior.place(x = 595, y = 343)
-        self.spinboxMargenVueltaInferior = Spinbox(self.pestania1, from_=0, to=300, increment=1, width = 4, font = ("Arial", 12), state=DISABLED)
+        self.spinboxMargenVueltaInferior = Spinbox(self.pestania1, from_=-300, to=300, increment=1, width = 4, font = ("Arial", 12), state=DISABLED)
+        self.spinboxMargenVueltaInferior.insert(0, 0)
         self.spinboxMargenVueltaInferior.place(x = 535, y = 343) # Como el halo jeje
 
         self.canvasCuadro1 = tk.Canvas(self.pestania1, width=151, height=151)

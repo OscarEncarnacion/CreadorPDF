@@ -262,6 +262,11 @@ class GeneradorPDF:
                 anversoY2 = round(anversoY1 + (h / 2))
                 reversoY1 = self.margenesReverso[3] * mm
                 reversoY2 = round(reversoY1 + (h / 2))
+                if self.tipoPapel == 5:
+                    # anversoY1 = anversoY1 + (.6 * inch)
+                    # anversoY2 = anversoY2 + (.6 * inch)
+                    reversoY1 = reversoY1 + (.6 * inch)
+                    reversoY2 = reversoY2 + (.6 * inch)
                 tamanioAX = w - ((self.margenesAnverso[0] + self.margenesAnverso[2]) * mm)
                 tamanioAY = round((h / 2) - ((self.margenesAnverso[1] + self.margenesAnverso[3]) * mm))
                 tamanioRX = w - ((self.margenesReverso[0] + self.margenesReverso[2]) * mm)
@@ -275,7 +280,7 @@ class GeneradorPDF:
                 anversoY2 = anversoY1
                 reversoY1 = self.margenesReverso[3] * mm
                 reversoY2 = reversoY1
-                if self.tipoPapel == 6:
+                if self.tipoPapel == 5:
                     anversoX1 = anversoX1 + (.6 * inch)
                     anversoX2 = anversoX2 + (.6 * inch)
                     reversoX1 = reversoX1 + (.6 * inch)
@@ -284,7 +289,7 @@ class GeneradorPDF:
                 tamanioAY = h - ((self.margenesAnverso[1] + self.margenesAnverso[3]) * mm)
                 tamanioRX = round((w / 2) - ((self.margenesReverso[0] + self.margenesReverso[2]) * mm))
                 tamanioRY = h - ((self.margenesReverso[1] + self.margenesReverso[3]) * mm)
-            if self.tipoPapel == 6:
+            if self.tipoPapel == 5:
                 pdf_canvas = canvas.Canvas(canvas_file, (wF, hF))
             else:
                 pdf_canvas = canvas.Canvas(canvas_file, (w, h))
